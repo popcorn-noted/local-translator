@@ -1,10 +1,11 @@
 # Local Translator (Spanish → English)
 
-A simple CLI app that uses QVAC to translate Spanish text to English entirely on-device.
+A simple CLI app that uses QVAC to translate text entirely on-device.
 
 ## Requirements
 
 - Node.js 18+
+- RAM: 4GB+ (for model loading)
 
 ## Installation
 
@@ -12,22 +13,31 @@ A simple CLI app that uses QVAC to translate Spanish text to English entirely on
 npm install
 ```
 
+## First-Time Setup
+
+Models need to be downloaded on first run. This may take a few minutes:
+
+```bash
+node index.js
+```
+
 ## Usage
 
 ```bash
 # Via command-line argument
-node index.js "Hola, ¿cómo estás?"
+node index.js "Hola mundo"
 
-# Interactive mode
+# Interactive (prompts for text)
 node index.js
 ```
 
 ## How It Works
 
-1. The app loads the QVAC translation model via `loadModel()`
-2. It accepts Spanish text via CLI argument or stdin
-3. It calls `translate()` to translate to English
-4. The translation is printed to stdout
+1. The app uses QVAC's `modelRegistryList()` to find available LLM models
+2. Downloads the model if not already present (first run only)
+3. Uses `loadModel()` to load the model into memory
+4. Calls `completion()` to translate the text to English
+5. Prints the translation
 
 No API keys, no cloud usage — everything runs locally on your device.
 
