@@ -21,6 +21,11 @@ A simple CLI app that uses QVAC to translate Spanish text to English entirely on
    python -m tetherto.qvac_sdk install-worker
    ```
 
+3. Download a model:
+   ```bash
+   python -m tetherto.qvac_sdk download-model Qwen3-0.6B-Q4_0
+   ```
+
 ## Usage
 
 ```bash
@@ -33,9 +38,9 @@ echo "Hola, ¿cómo estás?" | python main.py
 
 ## How It Works
 
-1. The app loads the QVAC translation model via `loadModel()`
-2. It accepts Spanish text via CLI argument or stdin
-3. It calls `translate()` to translate to English
+1. The app loads the QVAC model via `load_model()`
+2. It accepts text via CLI argument or stdin
+3. It calls `completion()` to translate the text
 4. The translation is printed to stdout
 
 No API keys, no cloud usage — everything runs locally on your device.
