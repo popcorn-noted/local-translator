@@ -1,0 +1,24 @@
+{
+  "name": "localtranslator",
+  "version": "1.0.0",
+  "description": "A simple CLI app that uses QVAC to translate Spanish text to English entirely on-device.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/popcorn-noted/local-translator.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/popcorn-noted/local-translator/issues"
+  },
+  "homepage": "https://github.com/popcorn-noted/local-translator#readme",
+  "dependencies": {
+    "@qvac/sdk": "^0.19.1"
+  }
+}
