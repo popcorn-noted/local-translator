@@ -1,6 +1,6 @@
 import sys
 import asyncio
-from tetherto.qvac_sdk import Client, load_model, completion, model_registry_list
+from tetherto.qvac_sdk import Client, load_model, completion, model_registry_list, download_asset
 
 async def main():
     # CLI input handling
@@ -17,16 +17,16 @@ async def main():
         async with Client() as client:
             transport = client.transport
             
+            # 1. Exact Registry Inspection
             print("Fetching model registry...")
             models = await model_registry_list(transport)
-            print(f"Found {len(models)} models in registry")
+            print(f"Found {len(models)} models")
             
-            # Extract .gguf models with full details
+            # Extract .gguf models
             gguf_models = []
             for item in models:
                 model_id = None
                 registry_path = None
-                registry_source = None
                 
                 for attr in ['model_id', 'id', 'name']:
                     if hasattr(item, attr):
@@ -35,19 +35,16 @@ async def main():
                 
                 if hasattr(item, 'registryPath'):
                     registry_path = getattr(item, 'registryPath')
-                if hasattr(item, 'registrySource'):
-                    registry_source = getattr(item, 'registrySource')
                 
                 if model_id and isinstance(model_id, str) and model_id.endswith('.gguf'):
                     gguf_models.append({
                         'id': model_id,
-                        'path': registry_path,
-                        'source': registry_source
+                        'path': registry_path
                     })
             
             print(f"Found {len(gguf_models)} .gguf models")
             
-            # Find models that match local availability
+            # 2. Model Auto-Selection
             priority_keywords = ['llama', 'gemma', 'salamandrata', 'qwen', 'inst', 'instruct']
             selected = None
             
@@ -65,12 +62,8 @@ async def main():
             
             print(f"\nSelected model: {selected['id']}")
             
-            # The model needs to be downloaded locally first
-            print(f"\nThis model needs to be downloaded locally.")
-            print("First run may take several minutes to download the model.")
-            print(f"Try loading with: {selected['id']}")
-            
-            # Try loading with model ID
+            # 3. SDK Invocation
+            print("Loading model (this may take a few minutes on first run)...")
             try:
                 model_id = await load_model(
                     transport, 
@@ -92,14 +85,26 @@ async def main():
                 print()
                 
             except Exception as e:
-                msg = str(e)
-                if "not found" in msg.lower():
-                    print("\nModel not found locally.")
-                    print("You need to download the model first:")
-                    print("  python -m tetherto.qvac_sdk download-model <model-name>")
-                    print("\nOr wait for automatic download on first run.")
+                msg = str(e).lower()
+                if "not found" in msg or "invalid" in msg:
+                    print("\nModel not found locally. Downloading...")
+                    # Try to download first
+                    if selected['path']:
+                        await download_asset(transport, selected['path'])
+                        print("Download complete. Retrying...")
+                        
+                        # Try loading again
+                        model_id = await load_model(
+                            transport, 
+                            model_src=selected['id'], 
+                            model_type="llamacpp-completion"
+                        )
+                        print(f"Model loaded: {model_id}")
+                    else:
+                        print("You need to download the model manually:")
+                        print(f"  python -m tetherto.qvac_sdk download-model {selected['id']}")
                 else:
-                    print(f"\nModel error: {e}")
+                    print(f"\nError: {e}")
     
     except Exception as e:
         print(f"\nUnexpected error: {e}")
